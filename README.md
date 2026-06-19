@@ -1,5 +1,5 @@
 # CalendarFlaskAPPYN
-## Main filse:
+## Main files:
 1. app.py (Flask server)
 2. index.html (webpage)
 
