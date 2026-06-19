@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar Viewer</title>
+    <style>
+        body {
+            font-family: Verdana, sans-serif;
+            margin: 40px;
+        }
+
+        input {
+            width: 700px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+        .event {
+            border: 1px solid;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+
+        #error {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Calendar Viewer</h1>
+    <input
+        type="text"
+        id="calendarLink"
+        placeholder="Paste public Google calendar link here"
+    >
+
+    <button onclick="loadCalendar()">Load Calendar</button>
+    <div id="error"></div>
+    <h2>Events:</h2>
+
+    <div id="events"></div>
+    <script>
+        async function loadCalendar() {
+            link = document.getElementById("calendarLink").value;
+            eventsBox = document.getElementById("events");
+            errorBox = document.getElementById("error");
+
+            eventsBox.innerHTML = "";
+            errorBox.textContent = "";
+
+            try {
+                response = await fetch("/api/calendar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        calendarLink: link
+                    })
+                });
+
+                data = await response.json();
+
+                if (!response.ok) {
+                    errorBox.textContent = data.error;
+                    return;}
+                if (data.length === 0) {
+                    eventsBox.innerHTML = "<p>No events found in the next 90 days.</p>";
+                    return;}
+                data.forEach(event => {
+                    div = document.createElement("div");
+                    div.className = "event";
+
+                    div.innerHTML = `
+                        <strong>${event.title}</strong><br>
+                        Start: ${event.start}<br>
+                        End: ${event.end}
+                    `;
+                    eventsBox.appendChild(div);
+                });
+
+            } catch (error) {
+                errorBox.textContent = "Failed to load calendar.";
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
